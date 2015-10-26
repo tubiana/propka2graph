@@ -11,7 +11,7 @@ python ~/Scripts/src/propka2graph/propka2graph.py -f ../capsid/pka_AB.propka ../
 """
 
 __author__ = "Thibault TUBIANA"
-__version__  = "1.1"
+__version__  = 1.2
 __copyright__ = "copyleft"
 __date__ = "2015/10"
 #==============================================================================
@@ -26,7 +26,8 @@ from operator import sub
 #                     GLOBAL VARIABLES                            
 #==============================================================================
 PKAMODEL={}
-resi=["ASP","GLU", "HIS","TYR","LYS", "ARG","CYS"]
+#resi=["ASP","GLU", "HIS","TYR","LYS", "ARG","CYS", "MTX"]
+RESI=[]
 #==============================================================================
 # TOOL FONCTION
 #==============================================================================
@@ -49,16 +50,13 @@ def FileToDict(filePath):
             if "---------------------------" in line:
                 break
             resname=line[:6].split()[0]
-            try:
-                number=int(line[6:10])
-                chain=line[11]
-                pka=float(line[15:20])
-                pkaModel=float(line[25:30])
-                if not PKAMODEL.has_key(resname):
-                    PKAMODEL[resname]=pkaModel
-                pkaDict[chain][resname][number]=pka
-            except:
-                pass
+            number=line[6:10]
+            chain=line[11]
+            pka=float(line[15:20])
+            pkaModel=float(line[25:30])
+            if not PKAMODEL.has_key(resname):
+                PKAMODEL[resname]=pkaModel
+            pkaDict[chain][resname][number]=pka
         elif "     RESIDUE    pKa   pKmodel   ligand atom-type" in line or \
              "       Group      pKa  model-pKa   ligand atom-type" in line:
             find=True
@@ -101,8 +99,14 @@ def DictToGraph(pkaDict, filename, chains_selected):
     else:    
         chains=chains_selected.split(",")
         
-        
-    for res in resi:
+    RESI=[]        
+    for chain in chains:
+        for res in pkaDict[chain].keys():
+            if res not in RESI:
+                RESI.append(res)
+                
+                
+    for res in RESI:
         labels=[]
         fig, ax = plt.subplots()
         fig.max_num_figures=100
@@ -115,7 +119,7 @@ def DictToGraph(pkaDict, filename, chains_selected):
             numbers.extend(numbers_temp)
             pkaCalc_temp=[pkaDict[chain][res][x] for x in numbers_temp]
             pkaCalc.extend(pkaCalc_temp)
-            labels.extend(["%i-%s" %(n,chain) for n in numbers_temp])
+            labels.extend(["%s-%s" %(n,chain) for n in numbers_temp])
             
         pkaGraph=[x-pkaTheo for x in pkaCalc]    
         colors=[]
@@ -148,7 +152,7 @@ def compare_graph(pkaDictList, chains_selected, filenames):
     else:    
         chains=chains_selected.split(",")
         
-    for res in resi:
+    for res in RESI:
         labels=[]
         fig, ax = plt.subplots()
         fig.max_num_figures=100
@@ -193,7 +197,7 @@ def compare_graph(pkaDictList, chains_selected, filenames):
 
 if __name__ == "__main__":
     print "***********************************************"
-    print "**********  PROPKA 2 GRAPH V1.1  **************"
+    print "**********  PROPKA 2 GRAPH V%.1f  **************" %__version__
     print "***********************************************"
     print ""
     #We get all arguments
