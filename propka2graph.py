@@ -7,13 +7,13 @@ DESCRIPTION
 ARGUMENTS : 
 
 USAGE : 
-
+python ~/Scripts/src/propka2graph/propka2graph.py -f ../capsid/pka_AB.propka ../NB2/dim_AB.propka -p Y -c A,B
 """
 
 __author__ = "Thibault TUBIANA"
-__version__  = "1.0.0"
+__version__  = "1.1"
 __copyright__ = "copyleft"
-__date__ = "20../.."
+__date__ = "2015/10"
 #==============================================================================
 #                     MODULES                            
 #==============================================================================
@@ -26,7 +26,7 @@ from operator import sub
 #                     GLOBAL VARIABLES                            
 #==============================================================================
 PKAMODEL={}
-
+resi=["ASP","GLU", "HIS","TYR","LYS", "ARG","CYS"]
 #==============================================================================
 # TOOL FONCTION
 #==============================================================================
@@ -49,13 +49,16 @@ def FileToDict(filePath):
             if "---------------------------" in line:
                 break
             resname=line[:6].split()[0]
-            number=int(line[6:10])
-            chain=line[11]
-            pka=float(line[15:20])
-            pkaModel=float(line[25:30])
-            if not PKAMODEL.has_key(resname):
-                PKAMODEL[resname]=pkaModel
-            pkaDict[chain][resname][number]=pka
+            try:
+                number=int(line[6:10])
+                chain=line[11]
+                pka=float(line[15:20])
+                pkaModel=float(line[25:30])
+                if not PKAMODEL.has_key(resname):
+                    PKAMODEL[resname]=pkaModel
+                pkaDict[chain][resname][number]=pka
+            except:
+                pass
         elif "     RESIDUE    pKa   pKmodel   ligand atom-type" in line or \
              "       Group      pKa  model-pKa   ligand atom-type" in line:
             find=True
@@ -76,7 +79,7 @@ def parseArg():
     @return: dictionnary of arguments
     """
     arguments=argparse.ArgumentParser(description="\
-            Description\
+            Parse and compare propka files.\
             ")
     arguments.add_argument('-f', "--files", help="propka file(s)",
                            nargs="*", required=True)
@@ -84,14 +87,14 @@ def parseArg():
                             by a coma)", default=None)
     arguments.add_argument('-p',"--comparaison", help="Compare 2 propka file (Y/N)",
                            default="N")
-    arguments.add_argument('-b',"--basic", help="basic graph?",
+    arguments.add_argument('-b',"--basic", help="basic graph? (Y/N)",
                            default="Y")
     args = vars(arguments.parse_args())
     return(args)
     
 
 def DictToGraph(pkaDict, filename, chains_selected):
-    resi=["ASP","GLU", "HIS","TYR","LYS", "ARG"]
+    
     if not chains_selected:
         chains=pkaDict.keys()
         chains.sort()
@@ -102,6 +105,7 @@ def DictToGraph(pkaDict, filename, chains_selected):
     for res in resi:
         labels=[]
         fig, ax = plt.subplots()
+        fig.max_num_figures=100
         pkaTheo=PKAMODEL[res]
         numbers=[]
         pkaCalc=[]
@@ -137,7 +141,6 @@ def compare_graph(pkaDictList, chains_selected, filenames):
     pkaDict0=pkaDictList[0]
     pkaDict1=pkaDictList[1]
     
-    resi=["ASP","GLU", "HIS","TYR","LYS", "ARG"]
     if not chains_selected:
         chains=pkaDict.keys()
         chains.sort()
@@ -148,6 +151,7 @@ def compare_graph(pkaDictList, chains_selected, filenames):
     for res in resi:
         labels=[]
         fig, ax = plt.subplots()
+        fig.max_num_figures=100
         pkaTheo=PKAMODEL[res]
         numbers=[]
         pkaGraph=[]
@@ -189,7 +193,7 @@ def compare_graph(pkaDictList, chains_selected, filenames):
 
 if __name__ == "__main__":
     print "***********************************************"
-    print "**********  PROPKA 2 GRAPH V1.0  **************"
+    print "**********  PROPKA 2 GRAPH V1.1  **************"
     print "***********************************************"
     print ""
     #We get all arguments
