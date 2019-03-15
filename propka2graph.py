@@ -54,7 +54,7 @@ def FileToDict(filePath):
             chain=line[11]
             pka=float(line[15:20])
             pkaModel=float(line[25:30])
-            if not PKAMODEL.has_key(resname):
+            if resname not in PKAMODEL:
                 PKAMODEL[resname]=pkaModel
             pkaDict[chain][resname][number]=pka
         elif "     RESIDUE    pKa   pKmodel   ligand atom-type" in line or \
@@ -94,14 +94,14 @@ def parseArg():
 def DictToGraph(pkaDict, filename, chains_selected):
     
     if not chains_selected:
-        chains=pkaDict.keys()
+        chains=list(pkaDict.keys())
         chains.sort()
     else:    
         chains=chains_selected.split(",")
         
     RESI=[]        
     for chain in chains:
-        for res in pkaDict[chain].keys():
+        for res in list(pkaDict[chain].keys()):
             if res not in RESI:
                 RESI.append(res)
                 
@@ -114,7 +114,7 @@ def DictToGraph(pkaDict, filename, chains_selected):
         numbers=[]
         pkaCalc=[]
         for chain in chains:
-            numbers_temp=pkaDict[chain][res].keys()
+            numbers_temp=list(pkaDict[chain][res].keys())
             numbers_temp.sort()
             numbers.extend(numbers_temp)
             pkaCalc_temp=[pkaDict[chain][res][x] for x in numbers_temp]
@@ -130,7 +130,7 @@ def DictToGraph(pkaDict, filename, chains_selected):
                 colors.append("lightskyblue")
         
         
-        x=range(len(pkaGraph))
+        x=list(range(len(pkaGraph)))
         ax.bar(x,pkaGraph, color=colors, alpha=0.5,edgecolor="black")
         ax.margins(0.05)
         ax.set_xlabel("Res numbers")
@@ -146,9 +146,9 @@ def compare_graph(pkaDictList, chains_selected, filenames):
     pkaDict1=pkaDictList[1]
     
     if not chains_selected:
-        chains=pkaDict.keys()
+        chains=list(pkaDict.keys())
         chains.sort()
-        print chains
+        print(chains)
     else:    
         chains=chains_selected.split(",")
         
@@ -160,14 +160,14 @@ def compare_graph(pkaDictList, chains_selected, filenames):
         numbers=[]
         pkaGraph=[]
         for chain in chains:
-            num0=pkaDict0[chain][res].keys()
-            num1=pkaDict1[chain][res].keys()
+            num0=list(pkaDict0[chain][res].keys())
+            num1=list(pkaDict1[chain][res].keys())
             numbers_temp=list(set(num0).intersection(num1))
             numbers_temp.sort()
             numbers.extend(numbers_temp)
             pka0=[pkaDict0[chain][res][x] for x in numbers_temp]
             pka1=[pkaDict1[chain][res][x] for x in numbers_temp]
-            pka=map(sub,pka0,pka1)
+            pka=list(map(sub,pka0,pka1))
             pkaGraph.extend(pka)
             labels.extend(["%i-%s" %(n,chain) for n in numbers_temp])
 
@@ -178,7 +178,7 @@ def compare_graph(pkaDictList, chains_selected, filenames):
             else:
                 colors.append("lightskyblue")
                         
-        x=range(len(pkaGraph))
+        x=list(range(len(pkaGraph)))
         ax.bar(x,pkaGraph, color=colors, alpha=0.5,edgecolor="black")
         ax.margins(0.05)
         ax.set_xlabel("Res numbers")
@@ -196,10 +196,10 @@ def compare_graph(pkaDictList, chains_selected, filenames):
 ###############################################################################
 
 if __name__ == "__main__":
-    print "***********************************************"
-    print "**********  PROPKA 2 GRAPH V%.1f  **************" %__version__
-    print "***********************************************"
-    print ""
+    print("***********************************************")
+    print(("**********  PROPKA 2 GRAPH V%.1f  **************" %__version__))
+    print("***********************************************")
+    print("")
     #We get all arguments
     myArgs=parseArg()
     
